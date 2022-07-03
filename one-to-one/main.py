@@ -10,10 +10,8 @@ connection_string = 'sqlite:///' + os.path.join(BASE_DIR, 'data.db')
 Base = declarative_base()
 
 #create and engine
-engine = create_engine(connection_string, echo=True)
+engine = create_engine(connection_string)
 
-#create a connection class
-Session = sessionmaker()
 
 """
    class Parent:
@@ -31,7 +29,7 @@ class Parent(Base):
    __tablename__ = 'parents'
    id=Column(Integer(), primary_key=True)
    name=Column(String(25), nullable=False)
-   child = relationship('Child', back_populates='parent', uselist=False)
+   child = relationship('Child', back_populates='parent', uselist=False, cascade= "all, delete")
 
    def __repr__(self) -> str:
       return f"<Parent {self.id}>"
@@ -40,10 +38,14 @@ class Child(Base):
    __tablename__ = 'children'
    id=Column(Integer(), primary_key=True)
    name=Column(String(25), nullable=False)
-   parent_id=Column(Integer(), ForeignKey('parents.id'))
+   parent_id=Column(Integer(), ForeignKey('parents.id', ondelete="CASCADE"))
    parent = relationship('Parent', back_populates='child')
 
    def __repr__(self) -> str:
       return f"<Child {self.id}>"
    
+
 Base.metadata.create_all(engine)
+
+#create a connection class
+session = sessionmaker()(bind=engine)
